@@ -4,3 +4,5 @@ Blender Learning Environment: inspired by the Arcade Learning Environment, BLE i
 The BLE_python_interface uses UDP socket communication between python and the blender game engine, and provides an api for passing images, game score, rewards and commands. Most of the functions present in ALE have been mirrored here.
 
 The file ridge_game.blend is a simple blender game, where the player object has to go in a straight line on a narrow plank without falling. The longer the distance travelled, the higher the score. 
+
+Blender is a open source 3D graphics and animation software, downloadable at "https://www.blender.org/".
