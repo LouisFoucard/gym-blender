@@ -1,0 +1,34 @@
+import socket
+import struct
+import math 
+import sys, time
+import pickle
+import numpy as np
+from IPython.display import Image as IPImage
+import PIL
+from PIL import Image
+import matplotlib.pyplot as plt
+from IPython import display
+from IPython.display import clear_output
+import sys
+import subprocess
+
+class BLE_interface:
+    
+    def __init__(self,blender_filename):
+        self.game_name = blender_filename
+        
+    #maybe merge __init__ with the following: start_game and start_UDP
+    def start_game(self):
+        print "starting"
+        args = ['/Applications/blender.app/Contents/MacOS/blender',self.game_name,'-P','start_engine.py']
+        subprocess.call(args)
+
+    def start_UDP(self):
+        #Connect through socket to the blender game engine (UDP):
+        # replace localhost with network name of game machine defined in game blend
+        HOST, PORT_SND, PORT_RCV = "localhost", 9999, 10000
+
+        # SOCK_DGRAM is the socket type to use for UDP sockets
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind((HOST, PORT_RCV)) 
