@@ -46,7 +46,7 @@ class BleEnv(gym.Env, utils.EzPickle):
             os.kill(self.viewer.pid, signal.SIGKILL)
 
     def _step(self, action):
-        for i in range(4):
+        for i in range(1):
             self.env.act(action)
             self.status = self.env.iterate()
         reward = self.env.get_reward()
