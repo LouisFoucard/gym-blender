@@ -21,7 +21,7 @@ class ble_environment:
     
     def start_game(self):
         print "starting"
-        args = ['blender',self.game_name,'-P','start_engine.py']
+        args = ['blender',self.game_name,'-P','games/start_engine.py']
         self.server_process = subprocess.Popen(args, shell=False)
         time.sleep(3.0)
 
