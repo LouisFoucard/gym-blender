@@ -16,8 +16,8 @@ class ble_environment:
         
     def __del__(self):
         print("stopping")
-        os.kill(self.server_process.pid, signal.SIGINT)
-
+        os.kill(self.server_process.pid, signal.SIGKILL)
+        #subprocess.call("killall -9 blender")
     
     def start_game(self):
         print "starting"
