@@ -1,6 +1,0 @@
-setup.py
-gym_blender.egg-info/PKG-INFO
-gym_blender.egg-info/SOURCES.txt
-gym_blender.egg-info/dependency_links.txt
-gym_blender.egg-info/requires.txt
-gym_blender.egg-info/top_level.txt
