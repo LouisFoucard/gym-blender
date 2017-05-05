@@ -11,10 +11,10 @@ obj = contr.owner
 
 # If not socket not opn, open it, else do nothing
 if obj['connected'] == '':
-    obj["frame"] = 0
-    obj["episode_frame"] = 0
-    obj["game_over"] = 0
-    obj["check_point"] = 0
+    # obj["frame"] = 0
+    # obj["episode_frame"] = 0
+    # obj["game_over"] = 0
+    # obj["check_point"] = 0
     # computer name and port number
     host = "localhost"  # replace with net name or IP address of game machine
     # host = "192.168.1.100"  # a static IP you might assign on a cable/dsl modem router box
