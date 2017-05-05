@@ -7,9 +7,10 @@ from gym import error, spaces
 from gym import utils
 
 try:
-    from ble import blenderInterface
+    from ble import BlenderInterface
 except ImportError as e:
-    raise error.DependencyNotInstalled("{}. (HINT: you can install ble dependencies with 'pip install gym[ble].)'".format(e))
+    raise error.DependencyNotInstalled("{}. (HINT: you can install ble "
+                                       "dependencies with 'pip install gym[ble].)'".format(e))
 
     
 import logging
@@ -24,7 +25,7 @@ class BleEnv(gym.Env, utils.EzPickle):
         self.viewer = None
         self.server_process = None
         self.game_path = game_path
-        self.env = blenderInterface(game_path)
+        self.env = BlenderInterface(game_path)
         
         self.env.start_game()
         self.env.start_udp()

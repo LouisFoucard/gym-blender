@@ -7,7 +7,7 @@ import subprocess
 import time
 
 
-class blenderInterface:
+class BlenderInterface:
     
     def __init__(self, blender_filename):
         self.game_name = blender_filename
@@ -109,7 +109,7 @@ class blenderInterface:
             image = pickle.loads(image[0])
             self.image[i:i+400] = image
         
-        _buffer = self.image.reshape(-1,self.img_size[0])
+        _buffer = self.image.reshape(-1, self.img_size[0])
         return _buffer
 
     def get_reward(self):
