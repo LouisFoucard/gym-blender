@@ -2,8 +2,7 @@
 
 # must get connections from Always sensor which feeds AND controller
 
-import socket, string, bge
-from bge import logic
+import socket
 from bge import logic as GameLogic
 
 # reference to main object

@@ -1,18 +1,13 @@
 # ReadBGE_UDPsocket sample Blender Script to read and act on data from UDP port
-
 # Must get connection from Always sensor which feeds AND Controller
 # and a connection from Property sensor
-import socket, struct, bge
-from bge import logic
-from bge import logic as GameLogic
-import pickle
-import bgl
-import numpy
 import math
-import os
-import string
-import time
-import bpy
+import numpy
+import pickle
+
+import bge
+import bgl
+from bge import logic as GameLogic
 
 scene = bge.logic.getCurrentScene()
 contr = GameLogic.getCurrentController()
@@ -28,7 +23,14 @@ class BlenderGameInteface(object):
         Data = pickle.dumps(Data, protocol=2)
         GameLogic.socketClient.sendto(Data, ("localhost", 10000))
 
+    def send_string(self, Data):
+        GameLogic.socketClient.sendto(Data, ("localhost", 10000))
+
     def send_image(self):
+        """
+        sends serialized image, uint8 image
+
+        """
         b = bgl.Buffer(bgl.GL_INT, 4)
         bgl.glGetIntegerv(bgl.GL_VIEWPORT, b)
         bgl.glReadBuffer(bgl.GL_FRONT)
