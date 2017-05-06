@@ -7,27 +7,14 @@ import pickle
 
 import bge
 import bgl
-from bge import logic as GameLogic
-
-scene = bge.logic.getCurrentScene()
-contr = GameLogic.getCurrentController()
-obj = contr.owner
-near = contr.sensors["Near"]
-
-legal_action_set = ["forward", "backward", "left", "right"]
+from bge import logic as game_logic
 
 
 class BlenderGameInteface(object):
-    def __init__(self):
 
+    def __init__(self, game_state):
+        self.game_state = game_state
         self.checkpoints = [obj.name for obj in scene.objects if 'checkpoint' in obj.name]
-
-    def send_data(self, Data):
-        Data = pickle.dumps(Data, protocol=2)
-        GameLogic.socketClient.sendto(Data, ("localhost", 10000))
-
-    def send_string(self, Data):
-        GameLogic.socketClient.sendto(Data, ("localhost", 10000))
 
     def get_screen_dims(self):
         b = bgl.Buffer(bgl.GL_INT, 4)
@@ -61,12 +48,12 @@ class BlenderGameInteface(object):
         reward = 0
 
         hit_List = near.hitObjectList
-
         for checkpoint in self.checkpoints:
             checkpoint_num = int(checkpoint.split('_')[1])
-            if checkpoint in hit_List and obj["check_point"] == checkpoint_num - 1:
+            if checkpoint in hit_List and self.game_state["check_point"] == checkpoint_num - 1:
+                print(checkpoint, self.game_state["check_point"])
                 reward = 1
-                obj["check_point"] += 1
+                self.game_state["check_point"] += 1
 
         self.send_data(reward)
 
@@ -76,34 +63,39 @@ class BlenderGameInteface(object):
         if any(k in hit_List for k in ["Wall_1", "Wall_2", "Wall_3"]):
             scene.objects["Player"].localPosition = [-28.0, 0.0, 1.2]
             scene.objects["Player"].worldOrientation = [0.0, 0.0, -1.6]
-            obj["episode_frame"] = 0
-            obj["game_over"] = 1
-            reward = -1
+            self.game_state["episode_frame"] = 0
+            self.game_state["game_over"] = 1
 
-        self.send_data(obj["game_over"])
+        self.send_data(self.game_state["game_over"])
 
-        if obj["game_over"] == 1:
+        if self.game_state["game_over"] == 1:
             print("GAME OVER")
 
     @staticmethod
-    def update_frame_number():
-        obj["frame"] += 1
-        obj["episode_frame"] += 1
+    def send_data(data):
+        data = pickle.dumps(data, protocol=2)
+        game_logic.socketClient.sendto(data, ("localhost", 10000))
 
     @staticmethod
-    def get_frame_number():
-        frame_number = math.floor(obj["frame"])
-        episode_frame_number = obj["episode_frame"]
-        return frame_number, episode_frame_number
+    def send_string(data):
+        game_logic.socketClient.sendto(data, ("localhost", 10000))
 
-    @staticmethod
-    def reset_game():
+    def update_frame_number(self):
+        self.game_state["frame"] += 1
+        self.game_state["episode_frame"] += 1
+
+    def get_frame_number(self):
+        _frame_number = math.floor(self.game_state["frame"])
+        _episode_frame_number = self.game_state["episode_frame"]
+        return _frame_number, _episode_frame_number
+
+    def reset_game(self):
         scene.objects["Player"].localPosition = [-28.0, 0.0, 1.2]
         scene.objects["Player"].worldOrientation = [0.0, 0.0, -1.6]
-        obj["episode_frame"] = 0
-        obj["game_over"] = 0
-        obj["frame"] = 0
-        obj["check_point"] = 0
+        self.game_state["episode_frame"] = 0
+        self.game_state["game_over"] = 0
+        self.game_state["frame"] = 0
+        self.game_state["check_point"] = 0
 
     @staticmethod
     def move(dx):
@@ -124,19 +116,25 @@ class BlenderGameInteface(object):
         scene.objects["Player"].worldOrientation = [0.0, 0.0, rot_z]
 
 
-gi = BlenderGameInteface()
+scene = bge.logic.getCurrentScene()
+contr = game_logic.getCurrentController()
+game_state = contr.owner
+near = contr.sensors["Near"]
+legal_action_set = ["forward", "backward", "left", "right"]
+
+gi = BlenderGameInteface(game_state)
 
 legal_action_set = [a.encode('ascii', 'ignore') for a in legal_action_set]
 
 frame_number, episode_frame_number = gi.get_frame_number()
 
 msg = ""
-if obj['connected'] == 'c':
+if game_state['connected'] == 'c':
 
     while msg != "proceed":
         try:
 
-            msg = GameLogic.socketClient.recvfrom(1024)
+            msg = game_logic.socketClient.recvfrom(1024)
             print(msg[0])
             msg = pickle.loads(msg[0])
             print(msg[0])
@@ -166,10 +164,10 @@ if obj['connected'] == 'c':
                 gi.send_data(legal_action_set)
 
             elif msg == "forward":
-                gi.move(2)
+                gi.move(0.2)
 
             elif msg == "backward":
-                gi.move(2)
+                gi.move(0.2)
 
             elif msg == "left":
                 gi.turn(0.2)
@@ -178,7 +176,7 @@ if obj['connected'] == 'c':
                 gi.turn(-0.2)
 
             elif msg == "off":
-                GameLogic.endGame()
+                game_logic.endGame()
 
         except Exception as e:
             print(e)

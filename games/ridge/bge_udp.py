@@ -1,20 +1,19 @@
 # Blender python script to open UDP port for listening
 
-# must get connections from Always sensor which feeds AND controller
+# must get connections from Always sensor with pulse mode deactivated (runs only at startup)
 
 import socket
 from bge import logic as GameLogic
 
 # reference to main object
 contr = GameLogic.getCurrentController()
-obj = contr.owner
+game_state = contr.owner
 
-# If not socket not opn, open it, else do nothing
-if obj['connected'] == '':
-    # obj["frame"] = 0
-    # obj["episode_frame"] = 0
-    # obj["game_over"] = 0
-    # obj["check_point"] = 0
+
+def main():
+    game_state["frame"] = 0
+    game_state["episode_frame"] = 0
+    game_state["game_over"] = 0
     # computer name and port number
     host = "localhost"  # replace with net name or IP address of game machine
     # host = "192.168.1.100"  # a static IP you might assign on a cable/dsl modem router box
@@ -25,6 +24,9 @@ if obj['connected'] == '':
     # nonblocking mode
     GameLogic.socketClient.setblocking(0)
     # Set object property ftp enable action script
-    obj['connected'] = 'c'
+    game_state['connected'] = 'c'
     print(host)
     print(port)
+
+if __name__ == '__main__':
+    main()
