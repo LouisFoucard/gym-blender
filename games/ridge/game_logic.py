@@ -10,6 +10,9 @@ import bgl
 from bge import logic as game_logic
 
 
+legal_action_set = ["forward", "backward", "left", "right"]
+
+
 class BlenderGameInteface(object):
 
     def __init__(self, scene, contr, near_sensor, legal_action_set, game_state):
@@ -121,6 +124,10 @@ class BlenderGameInteface(object):
             self._turn(dtheta=0.2)
 
     @staticmethod
+    def terminate():
+        game_logic.endGame()
+
+    @staticmethod
     def get_data(data):
         data = pickle.dumps(data, protocol=2)
         game_logic.socketClient.sendto(data, ("localhost", 10000))
@@ -131,11 +138,12 @@ class BlenderGameInteface(object):
 
 
 def main():
+    global legal_action_set
+
     scene = bge.logic.getCurrentScene()
     contr = game_logic.getCurrentController()
     game_state = contr.owner
     near_sensor = contr.sensors["Near"]
-    legal_action_set = ["forward", "backward", "left", "right"]
 
     forward, backward, left, right = legal_action_set
 
@@ -149,9 +157,9 @@ def main():
             try:
 
                 msg = game_logic.socketClient.recvfrom(1024)
-                print(msg[0])
                 msg = pickle.loads(msg[0])
-                print(msg[0])
+                if msg == 'proceed':
+                    continue
 
                 if len(msg.split('-')) > 1:
                     f_name, arg = msg.split('-')
@@ -165,7 +173,7 @@ def main():
             except Exception as e:
                 print(e)
 
-    frame_number, episode_frame_number = bgi.update_frame_number()
+    bgi.update_frame_number()
 
 if __name__ == "__main__":
     main()

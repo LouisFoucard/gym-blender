@@ -40,9 +40,6 @@ class BleEnv(gym.Env, utils.EzPickle):
         self.action_space = spaces.Tuple((spaces.Discrete(len(self.env.legal_action_set))))
         
     def __del__(self):
-        self.env.test_send("off")
-        self.env.iterate()
-        self.env.iterate()
         del self.env
         if self.viewer is not None:
             os.kill(self.viewer.pid, signal.SIGKILL)
