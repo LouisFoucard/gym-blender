@@ -42,18 +42,6 @@ class BlenderInterface:
         print "UDP started"
         return self.sock
 
-    def test_send(self, data):
-        data = pickle.dumps(data)
-        self.sock.sendto(data, (self.HOST, self.PORT_SND))
-        
-    def test_send_no_pickle(self, data):
-        self.sock.sendto(data, (self.HOST, self.PORT_SND))
-
-    def test_receive(self):
-        test_input = self.sock.recvfrom(1024)
-        test_input = pickle.loads(test_input[0])
-        print "test input is ", test_input
-
     def get_frame_number(self):
         data = pickle.dumps("get_data-frame_number")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
@@ -61,13 +49,13 @@ class BlenderInterface:
         self.frame = pickle.loads(frame[0])
 
     def get_episode_frame_number(self):
-        data = pickle.dumps("episode_frame")
+        data = pickle.dumps("get_data-episode_frame")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
         episode_frame = self.sock.recvfrom(1024)
         self.episode_frame = pickle.loads(episode_frame[0])
         
     def get_minimal_action_set(self):
-        data = pickle.dumps("action_set")
+        data = pickle.dumps("get_data-legal_action_set")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
         legal_action_set = self.sock.recvfrom(1024)
         self.legal_action_set = pickle.loads(legal_action_set[0])
@@ -77,11 +65,11 @@ class BlenderInterface:
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
 
     def act(self, action):
-        data = pickle.dumps(action)
+        data = pickle.dumps('act-'+action)
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
 
     def get_game_over(self):
-        data = pickle.dumps("game_over")
+        data = pickle.dumps("check_game_over")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
         go = self.sock.recvfrom(1024)
         go = pickle.loads(go[0])
@@ -92,7 +80,7 @@ class BlenderInterface:
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
 
     def get_screen_dims(self):
-        data = pickle.dumps("screen_dims")
+        data = pickle.dumps("get_screen_dims")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
         img_size = self.sock.recvfrom(1024)
         img_size = pickle.loads(img_size[0])
@@ -113,7 +101,7 @@ class BlenderInterface:
         return _buffer
 
     def get_reward(self):
-        data = pickle.dumps("reward")
+        data = pickle.dumps("get_reward")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
         reward = self.sock.recvfrom(1024)
         self.reward = pickle.loads(reward[0])

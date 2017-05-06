@@ -12,22 +12,24 @@ from bge import logic as game_logic
 
 class BlenderGameInteface(object):
 
-    def __init__(self, scene, contr, near_sensor, game_state):
+    def __init__(self, scene, contr, near_sensor, legal_action_set, game_state):
         self.game_state = game_state
         self.scene = scene
         self.contr = contr
         self.near_sensor = near_sensor
+        self.legal_action_set = legal_action_set
         self.checkpoints = [obj.name for obj in self.scene.objects if 'checkpoint' in obj.name]
 
-    def get_screen_dims(self):
         _buffer = bgl.Buffer(bgl.GL_INT, 4)
         bgl.glGetIntegerv(bgl.GL_VIEWPORT, _buffer)
         bgl.glReadBuffer(bgl.GL_FRONT)
         pix = bgl.Buffer(bgl.GL_INT, _buffer[2] * _buffer[3])
         bgl.glReadPixels(_buffer[0], _buffer[1], _buffer[2], _buffer[3], bgl.GL_LUMINANCE, bgl.GL_INT, pix)
-        x = _buffer[2]
-        y = _buffer[3]
-        self.get_data((x, y))
+        self.x = _buffer[2]
+        self.y = _buffer[3]
+
+    def get_screen_dims(self):
+        self.get_data((self.x, self.y))
 
     def get_image(self):
         """
@@ -91,7 +93,7 @@ class BlenderGameInteface(object):
         self.game_state["frame"] = 0
         self.game_state["check_point"] = 0
 
-    def move(self, dx):
+    def _move(self, dx):
         pos_x = self.scene.objects["Player"].localPosition[0]
         pos_y = self.scene.objects["Player"].localPosition[1]
         pos_z = self.scene.objects["Player"].localPosition[2]
@@ -101,11 +103,22 @@ class BlenderGameInteface(object):
         pos_y += dx * math.cos(rot_z)
         self.scene.objects["Player"].localPosition = [pos_x, pos_y, pos_z]
 
-    def turn(self, dtheta):
+    def _turn(self, dtheta):
         rot = self.scene.objects["Player"].worldOrientation.to_euler()
         rot_z = rot[2]
         rot_z -= dtheta
         self.scene.objects["Player"].worldOrientation = [0.0, 0.0, rot_z]
+
+    def act(self, action):
+        assert(action in self.legal_action_set)
+        if action == 'forward':
+            self._move(dx=0.2)
+        elif action == 'backward':
+            self._move(dx=0.2)
+        elif action == 'left':
+            self._turn(dtheta=-0.2)
+        elif action == 'right':
+            self._turn(dtheta=0.2)
 
     @staticmethod
     def get_data(data):
@@ -124,11 +137,10 @@ def main():
     near_sensor = contr.sensors["Near"]
     legal_action_set = ["forward", "backward", "left", "right"]
 
-    gi = BlenderGameInteface(scene, contr, near_sensor, game_state)
+    forward, backward, left, right = legal_action_set
 
-    legal_action_set = [a.encode('ascii', 'ignore') for a in legal_action_set]
-
-    frame_number, episode_frame_number = gi.get_frame_number()
+    bgi = BlenderGameInteface(scene, contr, near_sensor, legal_action_set, game_state)
+    frame_number, episode_frame_number = bgi.get_frame_number()
 
     msg = ""
     if game_state['connected'] == 'c':
@@ -141,55 +153,19 @@ def main():
                 msg = pickle.loads(msg[0])
                 print(msg[0])
 
-                if msg == "get_data-frame":
+                if len(msg.split('-')) > 1:
                     f_name, arg = msg.split('-')
-                    func = gi.__getattribute__(f_name)
+                    func = bgi.__getattribute__(f_name)
                     func(eval(arg))
-                    # gi.get_data(frame_number)
-
-                elif msg == "episode_frame":
-                    gi.get_data(episode_frame_number)
-
-                elif msg == "get_image":
+                else:
                     f_name = msg
-                    func = gi.__getattribute__(f_name)
+                    func = bgi.__getattribute__(f_name)
                     func()
-                    # gi.get_image()
-
-                elif msg == "reset_game":
-                    gi.reset_game()
-
-                elif msg == "game_over":
-                    gi.check_game_over()
-
-                elif msg == "reward":
-                    gi.get_reward()
-
-                elif msg == "screen_dims":
-                    gi.get_screen_dims()
-
-                elif msg == "action_set":
-                    gi.get_data(legal_action_set)
-
-                elif msg == "forward":
-                    gi.move(0.2)
-
-                elif msg == "backward":
-                    gi.move(0.2)
-
-                elif msg == "left":
-                    gi.turn(0.2)
-
-                elif msg == "right":
-                    gi.turn(-0.2)
-
-                elif msg == "off":
-                    game_logic.endGame()
 
             except Exception as e:
                 print(e)
 
-    gi.update_frame_number()
+    frame_number, episode_frame_number = bgi.update_frame_number()
 
 if __name__ == "__main__":
     main()
