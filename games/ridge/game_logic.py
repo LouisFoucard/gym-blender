@@ -17,13 +17,13 @@ class BlenderGameInteface(object):
         self.checkpoints = [obj.name for obj in scene.objects if 'checkpoint' in obj.name]
 
     def get_screen_dims(self):
-        b = bgl.Buffer(bgl.GL_INT, 4)
-        bgl.glGetIntegerv(bgl.GL_VIEWPORT, b)
+        _buffer = bgl.Buffer(bgl.GL_INT, 4)
+        bgl.glGetIntegerv(bgl.GL_VIEWPORT, _buffer)
         bgl.glReadBuffer(bgl.GL_FRONT)
-        pix = bgl.Buffer(bgl.GL_INT, b[2] * b[3])
-        bgl.glReadPixels(b[0], b[1], b[2], b[3], bgl.GL_LUMINANCE, bgl.GL_INT, pix)
-        x = b[2]
-        y = b[3]
+        pix = bgl.Buffer(bgl.GL_INT, _buffer[2] * _buffer[3])
+        bgl.glReadPixels(_buffer[0], _buffer[1], _buffer[2], _buffer[3], bgl.GL_LUMINANCE, bgl.GL_INT, pix)
+        x = _buffer[2]
+        y = _buffer[3]
         self.send_data((x, y))
 
     def send_image(self):
@@ -31,13 +31,13 @@ class BlenderGameInteface(object):
         sends serialized image, uint8 image
 
         """
-        b = bgl.Buffer(bgl.GL_INT, 4)
-        bgl.glGetIntegerv(bgl.GL_VIEWPORT, b)
+        _buffer = bgl.Buffer(bgl.GL_INT, 4)
+        bgl.glGetIntegerv(bgl.GL_VIEWPORT, _buffer)
         bgl.glReadBuffer(bgl.GL_FRONT)
-        pix = bgl.Buffer(bgl.GL_INT, b[2] * b[3])
-        bgl.glReadPixels(b[0], b[1], b[2], b[3], bgl.GL_LUMINANCE, bgl.GL_INT, pix)
-        x = b[2]
-        y = b[3]
+        pix = bgl.Buffer(bgl.GL_INT, _buffer[2] * _buffer[3])
+        bgl.glReadPixels(_buffer[0], _buffer[1], _buffer[2], _buffer[3], bgl.GL_LUMINANCE, bgl.GL_INT, pix)
+        x = _buffer[2]
+        y = _buffer[3]
         array = numpy.zeros((x * y), dtype=numpy.uint8)
         array[0:x * y] = pix
         self.send_data((x, y))
@@ -71,15 +71,6 @@ class BlenderGameInteface(object):
         if self.game_state["game_over"] == 1:
             print("GAME OVER")
 
-    @staticmethod
-    def send_data(data):
-        data = pickle.dumps(data, protocol=2)
-        game_logic.socketClient.sendto(data, ("localhost", 10000))
-
-    @staticmethod
-    def send_string(data):
-        game_logic.socketClient.sendto(data, ("localhost", 10000))
-
     def update_frame_number(self):
         self.game_state["frame"] += 1
         self.game_state["episode_frame"] += 1
@@ -96,6 +87,15 @@ class BlenderGameInteface(object):
         self.game_state["game_over"] = 0
         self.game_state["frame"] = 0
         self.game_state["check_point"] = 0
+
+    @staticmethod
+    def send_data(data):
+        data = pickle.dumps(data, protocol=2)
+        game_logic.socketClient.sendto(data, ("localhost", 10000))
+
+    @staticmethod
+    def send_string(data):
+        game_logic.socketClient.sendto(data, ("localhost", 10000))
 
     @staticmethod
     def move(dx):
