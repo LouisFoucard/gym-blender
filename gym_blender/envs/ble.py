@@ -55,7 +55,7 @@ class BlenderInterface:
         print "test input is ", test_input
 
     def get_frame_number(self):
-        data = pickle.dumps("frame")
+        data = pickle.dumps("get_data-frame_number")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
         frame = self.sock.recvfrom(1024)
         self.frame = pickle.loads(frame[0])
@@ -99,7 +99,7 @@ class BlenderInterface:
         return img_size[0], img_size[1]
 
     def get_screen_grayscale(self):
-        data = pickle.dumps("image")
+        data = pickle.dumps("get_image")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
         img_size = self.sock.recvfrom(1024)
         self.img_size = pickle.loads(img_size[0])

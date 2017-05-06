@@ -27,9 +27,9 @@ class BlenderGameInteface(object):
         bgl.glReadPixels(_buffer[0], _buffer[1], _buffer[2], _buffer[3], bgl.GL_LUMINANCE, bgl.GL_INT, pix)
         x = _buffer[2]
         y = _buffer[3]
-        self.send_data((x, y))
+        self.get_data((x, y))
 
-    def send_image(self):
+    def get_image(self):
         """
         sends serialized image, uint8 image
 
@@ -43,9 +43,9 @@ class BlenderGameInteface(object):
         y = _buffer[3]
         array = numpy.zeros((x * y), dtype=numpy.uint8)
         array[0:x * y] = pix
-        self.send_data((x, y))
+        self.get_data((x, y))
         for i in range(0, len(array), 400):
-            self.send_data(array[i:i + 400])
+            self.get_data(array[i:i + 400])
 
     def get_reward(self):
         reward = 0
@@ -58,7 +58,7 @@ class BlenderGameInteface(object):
                 reward = 1
                 self.game_state["check_point"] += 1
 
-        self.send_data(reward)
+        self.get_data(reward)
 
     def check_game_over(self):
         hit_List = self.near_sensor.hitObjectList
@@ -69,7 +69,7 @@ class BlenderGameInteface(object):
             self.game_state["episode_frame"] = 0
             self.game_state["game_over"] = 1
 
-        self.send_data(self.game_state["game_over"])
+        self.get_data(self.game_state["game_over"])
 
         if self.game_state["game_over"] == 1:
             print("GAME OVER")
@@ -91,15 +91,6 @@ class BlenderGameInteface(object):
         self.game_state["frame"] = 0
         self.game_state["check_point"] = 0
 
-    @staticmethod
-    def send_data(data):
-        data = pickle.dumps(data, protocol=2)
-        game_logic.socketClient.sendto(data, ("localhost", 10000))
-
-    @staticmethod
-    def send_string(data):
-        game_logic.socketClient.sendto(data, ("localhost", 10000))
-
     def move(self, dx):
         pos_x = self.scene.objects["Player"].localPosition[0]
         pos_y = self.scene.objects["Player"].localPosition[1]
@@ -115,6 +106,15 @@ class BlenderGameInteface(object):
         rot_z = rot[2]
         rot_z -= dtheta
         self.scene.objects["Player"].worldOrientation = [0.0, 0.0, rot_z]
+
+    @staticmethod
+    def get_data(data):
+        data = pickle.dumps(data, protocol=2)
+        game_logic.socketClient.sendto(data, ("localhost", 10000))
+
+    @staticmethod
+    def send_string(data):
+        game_logic.socketClient.sendto(data, ("localhost", 10000))
 
 
 def main():
@@ -141,14 +141,20 @@ def main():
                 msg = pickle.loads(msg[0])
                 print(msg[0])
 
-                if msg == "frame":
-                    gi.send_data(frame_number)
+                if msg == "get_data-frame":
+                    f_name, arg = msg.split('-')
+                    func = gi.__getattribute__(f_name)
+                    func(eval(arg))
+                    # gi.get_data(frame_number)
 
                 elif msg == "episode_frame":
-                    gi.send_data(episode_frame_number)
+                    gi.get_data(episode_frame_number)
 
-                elif msg == "image":
-                    gi.send_image()
+                elif msg == "get_image":
+                    f_name = msg
+                    func = gi.__getattribute__(f_name)
+                    func()
+                    # gi.get_image()
 
                 elif msg == "reset_game":
                     gi.reset_game()
@@ -163,7 +169,7 @@ def main():
                     gi.get_screen_dims()
 
                 elif msg == "action_set":
-                    gi.send_data(legal_action_set)
+                    gi.get_data(legal_action_set)
 
                 elif msg == "forward":
                     gi.move(0.2)
