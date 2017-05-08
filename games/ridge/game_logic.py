@@ -10,9 +10,6 @@ import bgl
 from bge import logic as game_logic
 
 
-legal_action_set = ["forward", "backward", "left", "right"]
-
-
 class BlenderGameInteface(object):
 
     def __init__(self, scene, contr, near_sensor, legal_action_set, game_state):
@@ -30,6 +27,15 @@ class BlenderGameInteface(object):
         bgl.glReadPixels(_buffer[0], _buffer[1], _buffer[2], _buffer[3], bgl.GL_LUMINANCE, bgl.GL_INT, pix)
         self.x = _buffer[2]
         self.y = _buffer[3]
+
+    def act(self, action):
+        pass
+
+    def get_reward(self):
+        pass
+
+    def check_game_over(self):
+        pass
 
     def get_screen_dims(self):
         self.get_data((self.x, self.y))
@@ -51,6 +57,52 @@ class BlenderGameInteface(object):
         self.get_data((x, y))
         for i in range(0, len(array), 400):
             self.get_data(array[i:i + 400])
+
+    def update_frame_number(self):
+        self.game_state["frame"] += 1
+        self.game_state["episode_frame"] += 1
+
+    def get_frame_number(self):
+        _frame_number = math.floor(self.game_state["frame"])
+        _episode_frame_number = self.game_state["episode_frame"]
+        return _frame_number, _episode_frame_number
+
+    def reset_game(self):
+        self.scene.objects["Player"].localPosition = [-28.0, 0.0, 1.2]
+        self.scene.objects["Player"].worldOrientation = [0.0, 0.0, -1.6]
+        self.game_state["episode_frame"] = 0
+        self.game_state["game_over"] = 0
+        self.game_state["frame"] = 0
+        self.game_state["check_point"] = 0
+
+    @staticmethod
+    def terminate():
+        game_logic.endGame()
+
+    @staticmethod
+    def get_data(data):
+        data = pickle.dumps(data, protocol=2)
+        game_logic.socketClient.sendto(data, ("localhost", 10000))
+
+
+legal_action_set = ["forward", "backward", "left", "right"]
+
+
+class RidgeGameInterface(BlenderGameInteface):
+
+    def __init__(self, scene, contr, near_sensor, legal_action_set, game_state):
+        super(RidgeGameInterface, self).__init__(scene, contr, near_sensor, legal_action_set, game_state)
+
+    def act(self, action):
+        assert (action in self.legal_action_set)
+        if action == 'forward':
+            self._move(dx=0.2)
+        elif action == 'backward':
+            self._move(dx=0.2)
+        elif action == 'left':
+            self._turn(dtheta=-0.2)
+        elif action == 'right':
+            self._turn(dtheta=0.2)
 
     def get_reward(self):
         reward = 0
@@ -79,23 +131,6 @@ class BlenderGameInteface(object):
         if self.game_state["game_over"] == 1:
             print("GAME OVER")
 
-    def update_frame_number(self):
-        self.game_state["frame"] += 1
-        self.game_state["episode_frame"] += 1
-
-    def get_frame_number(self):
-        _frame_number = math.floor(self.game_state["frame"])
-        _episode_frame_number = self.game_state["episode_frame"]
-        return _frame_number, _episode_frame_number
-
-    def reset_game(self):
-        self.scene.objects["Player"].localPosition = [-28.0, 0.0, 1.2]
-        self.scene.objects["Player"].worldOrientation = [0.0, 0.0, -1.6]
-        self.game_state["episode_frame"] = 0
-        self.game_state["game_over"] = 0
-        self.game_state["frame"] = 0
-        self.game_state["check_point"] = 0
-
     def _move(self, dx):
         pos_x = self.scene.objects["Player"].localPosition[0]
         pos_y = self.scene.objects["Player"].localPosition[1]
@@ -112,30 +147,6 @@ class BlenderGameInteface(object):
         rot_z -= dtheta
         self.scene.objects["Player"].worldOrientation = [0.0, 0.0, rot_z]
 
-    def act(self, action):
-        assert(action in self.legal_action_set)
-        if action == 'forward':
-            self._move(dx=0.2)
-        elif action == 'backward':
-            self._move(dx=0.2)
-        elif action == 'left':
-            self._turn(dtheta=-0.2)
-        elif action == 'right':
-            self._turn(dtheta=0.2)
-
-    @staticmethod
-    def terminate():
-        game_logic.endGame()
-
-    @staticmethod
-    def get_data(data):
-        data = pickle.dumps(data, protocol=2)
-        game_logic.socketClient.sendto(data, ("localhost", 10000))
-
-    @staticmethod
-    def send_string(data):
-        game_logic.socketClient.sendto(data, ("localhost", 10000))
-
 
 def main():
     global legal_action_set
@@ -147,7 +158,7 @@ def main():
 
     forward, backward, left, right = legal_action_set
 
-    bgi = BlenderGameInteface(scene, contr, near_sensor, legal_action_set, game_state)
+    bgi = RidgeGameInterface(scene, contr, near_sensor, legal_action_set, game_state)
     frame_number, episode_frame_number = bgi.get_frame_number()
 
     msg = ""
