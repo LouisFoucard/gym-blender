@@ -11,8 +11,6 @@ game_state = contr.owner
 
 
 def main():
-    game_state["frame"] = 0
-    game_state["episode_frame"] = 0
     game_state["game_over"] = 0
     # computer name and port number
     host = "localhost"  # replace with net name or IP address of game machine

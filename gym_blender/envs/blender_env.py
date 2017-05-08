@@ -33,7 +33,7 @@ class BleEnv(gym.Env, utils.EzPickle):
         # initialize with random action
         action = self.env.legal_action_set[np.random.randint(len(self.env.legal_action_set))]
         self.env.act(action)
-        self.env.iterate()
+        self.env.step()
         self.observation_space = spaces.Box(low=-1, high=1,
                                             shape=(self.env.get_screen_dims()))
         
@@ -47,7 +47,7 @@ class BleEnv(gym.Env, utils.EzPickle):
     def _step(self, action):
         for i in range(1):
             self.env.act(action)
-            self.status = self.env.iterate()
+            self.status = self.env.step()
         reward = self.env.get_reward()
         ob = self.env.get_screen_grayscale()
         episode_over = self.env.get_game_over()
@@ -57,7 +57,7 @@ class BleEnv(gym.Env, utils.EzPickle):
         self.env.reset_game()
         action = self.env.legal_action_set[np.random.randint(len(self.env.legal_action_set))]
         self.env.act(action)
-        self.env.iterate()
+        self.env.step()
         ob = self.env.get_screen_grayscale()
         return ob
 

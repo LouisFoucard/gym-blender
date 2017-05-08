@@ -45,26 +45,14 @@ class BlenderInterface:
         print "UDP started"
         return self.sock
 
-    def get_frame_number(self):
-        data = pickle.dumps("get_data-frame_number")
-        self.sock.sendto(data, (self.HOST, self.PORT_SND))
-        frame = self.sock.recvfrom(1024)
-        self.frame = pickle.loads(frame[0])
-
-    def get_episode_frame_number(self):
-        data = pickle.dumps("get_data-episode_frame")
-        self.sock.sendto(data, (self.HOST, self.PORT_SND))
-        episode_frame = self.sock.recvfrom(1024)
-        self.episode_frame = pickle.loads(episode_frame[0])
-        
     def get_minimal_action_set(self):
         data = pickle.dumps("get_data-legal_action_set")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
         legal_action_set = self.sock.recvfrom(1024)
         self.legal_action_set = pickle.loads(legal_action_set[0])
                     
-    def iterate(self):
-        data = pickle.dumps("proceed")
+    def step(self):
+        data = pickle.dumps("step")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
 
     def act(self, action):
