@@ -46,7 +46,7 @@ class BlenderInterface:
         return self.sock
 
     def get_minimal_action_set(self):
-        data = pickle.dumps("get_data-legal_action_set")
+        data = pickle.dumps("get_legal_action_set")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
         legal_action_set = self.sock.recvfrom(1024)
         self.legal_action_set = pickle.loads(legal_action_set[0])

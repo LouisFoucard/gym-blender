@@ -36,6 +36,8 @@ class BleEnv(gym.Env, utils.EzPickle):
         self.env.step()
         self.observation_space = spaces.Box(low=-1, high=1,
                                             shape=(self.env.get_screen_dims()))
+
+        print('+++++++++++++', self.env.get_screen_dims())
         
         self.action_space = spaces.Tuple((spaces.Discrete(len(self.env.legal_action_set))))
         
