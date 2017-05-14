@@ -35,10 +35,10 @@ class BlenderGameInteface(object):
         self.get_data((self.screen_w, self.screen_h))
 
     def get_image(self):
-        """
+        '''
         sends serialized image, uint8 image
 
-        """
+        '''
         _buffer = bgl.Buffer(bgl.GL_INT, 4)
         bgl.glGetIntegerv(bgl.GL_VIEWPORT, _buffer)
         bgl.glReadBuffer(bgl.GL_FRONT)
@@ -51,7 +51,7 @@ class BlenderGameInteface(object):
             self.get_data(array[i:i + 400])
 
     def reset_game(self):
-        self.game_state["game_over"] = 0
+        self.game_state['game_over'] = 0
 
     def get_legal_action_set(self):
         self.get_data(self.legal_action_set)
@@ -63,13 +63,13 @@ class BlenderGameInteface(object):
     @staticmethod
     def get_data(data):
         data = pickle.dumps(data, protocol=2)
-        game_logic.socketClient.sendto(data, ("localhost", 10000))
+        game_logic.socketClient.sendto(data, ('localhost', 10000))
 
 
 class RidgeGameInterface(BlenderGameInteface):
 
     def __init__(self, scene, contr):
-        """
+        '''
         Interface for the game Ridge, inherits from the BlenderGameInterface.
         In Ridge, the player goal is to walk the furthest on a plank without
         falling.
@@ -79,11 +79,11 @@ class RidgeGameInterface(BlenderGameInteface):
 
         :param scene: blender game engine scene object
         :param contr: blender game engine controller object
-        """
+        '''
         super(RidgeGameInterface, self).__init__(scene, contr)
         self.checkpoints = [obj.name for obj in self.scene.objects if 'checkpoint' in obj.name]
-        self.new_sensor = contr.sensors["Near"]
-        self.legal_action_set = ["forward", "backward", "left", "right"]
+        self.new_sensor = contr.sensors['Near']
+        self.legal_action_set = ['forward', 'backward', 'left', 'right']
 
     def act(self, action):
         assert (action in self.legal_action_set)
@@ -102,47 +102,47 @@ class RidgeGameInterface(BlenderGameInteface):
         hit_List = self.new_sensor.hitObjectList
         for checkpoint in self.checkpoints:
             checkpoint_num = int(checkpoint.split('_')[1])
-            if checkpoint in hit_List and self.game_state["check_point"] == checkpoint_num - 1:
-                print(checkpoint, self.game_state["check_point"])
+            if checkpoint in hit_List and self.game_state['check_point'] == checkpoint_num - 1:
+                print(checkpoint, self.game_state['check_point'])
                 reward = 1
-                self.game_state["check_point"] += 1
+                self.game_state['check_point'] += 1
 
         self.get_data(reward)
 
     def check_game_over(self):
         hit_List = self.new_sensor.hitObjectList
 
-        if any(k in hit_List for k in ["Wall_1", "Wall_2", "Wall_3"]):
-            self.scene.objects["Player"].localPosition = [-28.0, 0.0, 1.2]
-            self.scene.objects["Player"].worldOrientation = [0.0, 0.0, -1.6]
-            self.game_state["game_over"] = 1
+        if any(k in hit_List for k in ['Wall_1', 'Wall_2', 'Wall_3']):
+            self.scene.objects['Player'].localPosition = [-28.0, 0.0, 1.2]
+            self.scene.objects['Player'].worldOrientation = [0.0, 0.0, -1.6]
+            self.game_state['game_over'] = 1
 
-        self.get_data(self.game_state["game_over"])
+        self.get_data(self.game_state['game_over'])
 
-        if self.game_state["game_over"] == 1:
-            print("GAME OVER")
+        if self.game_state['game_over'] == 1:
+            print('GAME OVER')
 
     def reset_game(self):
         super(RidgeGameInterface, self).reset_game()
-        self.scene.objects["Player"].localPosition = [-28.0, 0.0, 1.2]
-        self.scene.objects["Player"].worldOrientation = [0.0, 0.0, -1.6]
-        self.game_state["check_point"] = 0
+        self.scene.objects['Player'].localPosition = [-28.0, 0.0, 1.2]
+        self.scene.objects['Player'].worldOrientation = [0.0, 0.0, -1.6]
+        self.game_state['check_point'] = 0
 
     def _move(self, dx):
-        pos_x = self.scene.objects["Player"].localPosition[0]
-        pos_y = self.scene.objects["Player"].localPosition[1]
-        pos_z = self.scene.objects["Player"].localPosition[2]
-        rot = self.scene.objects["Player"].worldOrientation.to_euler()
+        pos_x = self.scene.objects['Player'].localPosition[0]
+        pos_y = self.scene.objects['Player'].localPosition[1]
+        pos_z = self.scene.objects['Player'].localPosition[2]
+        rot = self.scene.objects['Player'].worldOrientation.to_euler()
         rot_z = rot[2]
         pos_x += -dx * math.sin(rot_z)
         pos_y += dx * math.cos(rot_z)
-        self.scene.objects["Player"].localPosition = [pos_x, pos_y, pos_z]
+        self.scene.objects['Player'].localPosition = [pos_x, pos_y, pos_z]
 
     def _turn(self, dtheta):
-        rot = self.scene.objects["Player"].worldOrientation.to_euler()
+        rot = self.scene.objects['Player'].worldOrientation.to_euler()
         rot_z = rot[2]
         rot_z -= dtheta
-        self.scene.objects["Player"].worldOrientation = [0.0, 0.0, rot_z]
+        self.scene.objects['Player'].worldOrientation = [0.0, 0.0, rot_z]
 
 
 def main():
@@ -152,15 +152,13 @@ def main():
     contr = game_logic.getCurrentController()
     game_state = contr.owner
 
-    try:
-        if game_state['connected2']:
-            pass
+    if game_state['connected']:
+        pass
 
-    except Exception as e:
-        print(e)
+    else:
         # computer name and port number
-        host = "localhost"  # replace with net name or IP address of game machine
-        # host = "192.168.1.100"  # a static IP you might assign on a cable/dsl modem router box
+        host = 'localhost'  # replace with net name or IP address of game machine
+        # host = '192.168.1.100'  # a static IP you might assign on a cable/dsl modem router box
         port = 9999  # socket for UDP
         game_logic.socketClient = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         # accept messages from client to this host and port
@@ -168,13 +166,13 @@ def main():
         # nonblocking mode
         game_logic.socketClient.setblocking(0)
         # Set object property ftp enable action script
-        game_state['connected'] = 'c'
+        game_state['connected'] = True
         print('Connected to host {} on port {}'.format(host, port))
 
         bgi = RidgeGameInterface(scene, contr)
 
-        game_state["game_over"] = 0
-        game_state["bgi"] = bgi
+        game_state['game_over'] = 0
+        game_state['bgi'] = bgi
 
 if __name__ == '__main__':
     main()
