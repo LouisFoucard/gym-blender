@@ -23,6 +23,7 @@ class BlenderInterface:
         self.img_size = None
         self.image = np.empty(0)
         self.reward = 0
+        self.buflen = 1024
         
     def __del__(self):
         print("stopping")
@@ -46,9 +47,9 @@ class BlenderInterface:
         return self.sock
 
     def get_minimal_action_set(self):
-        data = pickle.dumps("get_data-legal_action_set")
+        data = pickle.dumps("get_legal_action_set")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
-        legal_action_set = self.sock.recvfrom(1024)
+        legal_action_set = self.sock.recvfrom(self.buflen)
         self.legal_action_set = pickle.loads(legal_action_set[0])
                     
     def step(self):
@@ -62,7 +63,7 @@ class BlenderInterface:
     def get_game_over(self):
         data = pickle.dumps("check_game_over")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
-        go = self.sock.recvfrom(1024)
+        go = self.sock.recvfrom(self.buflen)
         go = pickle.loads(go[0])
         return go
     
@@ -73,18 +74,18 @@ class BlenderInterface:
     def get_screen_dims(self):
         data = pickle.dumps("get_screen_dims")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
-        img_size = self.sock.recvfrom(1024)
+        img_size = self.sock.recvfrom(self.buflen)
         img_size = pickle.loads(img_size[0])
         return img_size[0], img_size[1]
 
     def get_screen_grayscale(self):
         data = pickle.dumps("get_image")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
-        img_size = self.sock.recvfrom(1024)
+        img_size = self.sock.recvfrom(self.buflen)
         self.img_size = pickle.loads(img_size[0])
         self.image = np.zeros((self.img_size[0]*self.img_size[1]), dtype=np.uint8)
         for i in range(0, self.img_size[0]*self.img_size[1], 400):
-            image = self.sock.recvfrom(1024)
+            image = self.sock.recvfrom(self.buflen)
             image = pickle.loads(image[0])
             self.image[i:i+400] = image
         
@@ -94,6 +95,6 @@ class BlenderInterface:
     def get_reward(self):
         data = pickle.dumps("get_reward")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
-        reward = self.sock.recvfrom(1024)
+        reward = self.sock.recvfrom(self.buflen)
         self.reward = pickle.loads(reward[0])
         return self.reward
