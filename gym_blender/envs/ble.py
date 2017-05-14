@@ -30,6 +30,7 @@ class BlenderInterface:
         data = pickle.dumps("terminate")
         self.sock.sendto(data, (self.HOST, self.PORT_SND))
         time.sleep(0.1)
+        self.sock.close()
         os.kill(self.server_process.pid, signal.SIGKILL)
     
     def start_game(self):
