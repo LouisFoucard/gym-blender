@@ -151,24 +151,30 @@ def main():
     scene = bge.logic.getCurrentScene()
     contr = game_logic.getCurrentController()
     game_state = contr.owner
-    # computer name and port number
-    host = "localhost"  # replace with net name or IP address of game machine
-    # host = "192.168.1.100"  # a static IP you might assign on a cable/dsl modem router box
-    port = 9999  # socket for UDP
-    game_logic.socketClient = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # accept messages from client to this host and port
-    game_logic.socketClient.bind((host, port))
-    # nonblocking mode
-    game_logic.socketClient.setblocking(0)
-    # Set object property ftp enable action script
-    game_state['connected'] = 'c'
-    print(host)
-    print(port)
 
-    bgi = RidgeGameInterface(scene, contr)
+    try:
+        if game_state['connected2']:
+            pass
 
-    game_state["game_over"] = 0
-    game_state["bgi"] = bgi
+    except Exception as e:
+        print(e)
+        # computer name and port number
+        host = "localhost"  # replace with net name or IP address of game machine
+        # host = "192.168.1.100"  # a static IP you might assign on a cable/dsl modem router box
+        port = 9999  # socket for UDP
+        game_logic.socketClient = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # accept messages from client to this host and port
+        game_logic.socketClient.bind((host, port))
+        # nonblocking mode
+        game_logic.socketClient.setblocking(0)
+        # Set object property ftp enable action script
+        game_state['connected'] = 'c'
+        print('Connected to host {} on port {}'.format(host, port))
+
+        bgi = RidgeGameInterface(scene, contr)
+
+        game_state["game_over"] = 0
+        game_state["bgi"] = bgi
 
 if __name__ == '__main__':
     main()
