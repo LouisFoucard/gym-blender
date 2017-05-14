@@ -35,10 +35,10 @@ class BlenderGameInteface(object):
         self.get_data((self.screen_w, self.screen_h))
 
     def get_image(self):
-        '''
+        """
         sends serialized image, uint8 image
 
-        '''
+        """
         _buffer = bgl.Buffer(bgl.GL_INT, 4)
         bgl.glGetIntegerv(bgl.GL_VIEWPORT, _buffer)
         bgl.glReadBuffer(bgl.GL_FRONT)
@@ -69,7 +69,7 @@ class BlenderGameInteface(object):
 class RidgeGameInterface(BlenderGameInteface):
 
     def __init__(self, scene, contr):
-        '''
+        """
         Interface for the game Ridge, inherits from the BlenderGameInterface.
         In Ridge, the player goal is to walk the furthest on a plank without
         falling.
@@ -79,7 +79,7 @@ class RidgeGameInterface(BlenderGameInteface):
 
         :param scene: blender game engine scene object
         :param contr: blender game engine controller object
-        '''
+        """
         super(RidgeGameInterface, self).__init__(scene, contr)
         self.checkpoints = [obj.name for obj in self.scene.objects if 'checkpoint' in obj.name]
         self.new_sensor = contr.sensors['Near']
