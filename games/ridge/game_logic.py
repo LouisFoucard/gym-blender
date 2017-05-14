@@ -1,4 +1,4 @@
-# Templated Blender Game Interface to read and act on data from UDP port
+
 
 import pickle
 from io import BlockingIOError

@@ -1,6 +1,7 @@
-# Blender python script to open UDP port for listening
+# Templated Blender Game Interface to read and act on data from UDP port
 
-# must get connections from Always sensor with pulse mode deactivated (runs only at startup)
+# must get connections from Always sensor with pulse mode deactivated
+#  (runs only at game set up)
 import math
 import numpy
 import pickle
