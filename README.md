@@ -23,7 +23,7 @@ sudo apt install blender
 ```{r, engine='bash', count_lines}
 git clone git@github.com:LouisFoucard/gym-blender.git
 cd gym-blender
-python setup.py build install
+pip install -e .
     
 ```
    
