@@ -7,7 +7,7 @@ from gym import error, spaces
 from gym import utils
 
 try:
-    from ble import BlenderInterface
+    from blender_interface import BlenderInterface
 except ImportError as e:
     raise error.DependencyNotInstalled("{}. (HINT: you can install ble "
                                        "dependencies with 'pip install gym[ble].)'".format(e))
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class BleEnv(gym.Env, utils.EzPickle):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, game_path='games/ridge_game.blend'):
+    def __init__(self, game_path='games/ridge/ridge.blend'):
         super(BleEnv, self).__init__()
         self.viewer = None
         self.server_process = None
@@ -47,7 +47,7 @@ class BleEnv(gym.Env, utils.EzPickle):
     def _step(self, action):
         for i in range(1):
             self.env.act(action)
-            self.status = self.env.step()
+            self.env.step()
         reward = self.env.get_reward()
         ob = self.env.get_screen_grayscale()
         episode_over = self.env.get_game_over()

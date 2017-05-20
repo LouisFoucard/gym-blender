@@ -9,13 +9,13 @@ import time
 
 class BlenderInterface:
     
-    def __init__(self, blender_filename):
+    def __init__(self, blender_filename, host='localhost', port_send=9999, port_rcv=10000):
         self.game_name = blender_filename
         self.game_over = 0
         self.server_process = None
-        self.HOST = "localhost"
-        self.PORT_SND = 9999
-        self.PORT_RCV = 10000
+        self.HOST = host
+        self.PORT_SND = port_send
+        self.PORT_RCV = port_rcv
         self.sock = None
         self.frame = None
         self.episode_frame = None
@@ -26,9 +26,10 @@ class BlenderInterface:
         self.buflen = 1024
         
     def __del__(self):
+        """exit gracefully"""
         print("stopping")
-        data = pickle.dumps("terminate")
-        self.sock.sendto(data, (self.HOST, self.PORT_SND))
+        cmd = pickle.dumps("terminate")
+        self.sock.sendto(cmd, (self.HOST, self.PORT_SND))
         time.sleep(0.1)
         self.sock.close()
         os.kill(self.server_process.pid, signal.SIGKILL)
@@ -48,40 +49,40 @@ class BlenderInterface:
         return self.sock
 
     def get_minimal_action_set(self):
-        data = pickle.dumps("get_legal_action_set")
-        self.sock.sendto(data, (self.HOST, self.PORT_SND))
+        cmd = pickle.dumps("get_legal_action_set")
+        self.sock.sendto(cmd, (self.HOST, self.PORT_SND))
         legal_action_set = self.sock.recvfrom(self.buflen)
         self.legal_action_set = pickle.loads(legal_action_set[0])
                     
     def step(self):
-        data = pickle.dumps("step")
-        self.sock.sendto(data, (self.HOST, self.PORT_SND))
+        cmd = pickle.dumps("step")
+        self.sock.sendto(cmd, (self.HOST, self.PORT_SND))
 
     def act(self, action):
-        data = pickle.dumps('act-'+action)
-        self.sock.sendto(data, (self.HOST, self.PORT_SND))
+        cmd = pickle.dumps('act-'+action)
+        self.sock.sendto(cmd, (self.HOST, self.PORT_SND))
 
     def get_game_over(self):
-        data = pickle.dumps("check_game_over")
-        self.sock.sendto(data, (self.HOST, self.PORT_SND))
+        cmd = pickle.dumps("check_game_over")
+        self.sock.sendto(cmd, (self.HOST, self.PORT_SND))
         go = self.sock.recvfrom(self.buflen)
         go = pickle.loads(go[0])
         return go
     
     def reset_game(self):
-        data = pickle.dumps("reset_game")
-        self.sock.sendto(data, (self.HOST, self.PORT_SND))
+        cmd = pickle.dumps("reset_game")
+        self.sock.sendto(cmd, (self.HOST, self.PORT_SND))
 
     def get_screen_dims(self):
-        data = pickle.dumps("get_screen_dims")
-        self.sock.sendto(data, (self.HOST, self.PORT_SND))
+        cmd = pickle.dumps("get_screen_dims")
+        self.sock.sendto(cmd, (self.HOST, self.PORT_SND))
         img_size = self.sock.recvfrom(self.buflen)
         img_size = pickle.loads(img_size[0])
         return img_size[0], img_size[1]
 
     def get_screen_grayscale(self):
-        data = pickle.dumps("get_image")
-        self.sock.sendto(data, (self.HOST, self.PORT_SND))
+        cmd = pickle.dumps("get_image")
+        self.sock.sendto(cmd, (self.HOST, self.PORT_SND))
         img_size = self.sock.recvfrom(self.buflen)
         self.img_size = pickle.loads(img_size[0])
         self.image = np.zeros((self.img_size[0]*self.img_size[1]), dtype=np.uint8)
@@ -94,8 +95,8 @@ class BlenderInterface:
         return _buffer
 
     def get_reward(self):
-        data = pickle.dumps("get_reward")
-        self.sock.sendto(data, (self.HOST, self.PORT_SND))
+        cmd = pickle.dumps("get_reward")
+        self.sock.sendto(cmd, (self.HOST, self.PORT_SND))
         reward = self.sock.recvfrom(self.buflen)
         self.reward = pickle.loads(reward[0])
         return self.reward
