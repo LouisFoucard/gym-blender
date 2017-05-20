@@ -1,1 +1,1 @@
-from gym_blender.envs.blender_env import BleEnv
+from gym_blender.envs.blender_env import RidgeEnv

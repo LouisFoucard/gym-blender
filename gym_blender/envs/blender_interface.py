@@ -36,13 +36,13 @@ class BlenderInterface:
     
     def start_game(self):
         print("starting")
-        args = ['blender', self.game_name, '-P', 'games/start_engine.py']
+        start_script_path = os.path.join(os.path.dirname(self.game_name), 'start_engine.py')
+        args = ['blender', self.game_name, '-P', start_script_path]
         self.server_process = subprocess.Popen(args, shell=False)
         time.sleep(3.0)
 
     def start_udp(self):
-        # Connect through socket to the blender game engine (UDP):
-        # SOCK_DGRAM is the socket type to use for UDP sockets
+        # Connect through socket (UDP) to the blender game engine:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind((self.HOST, self.PORT_RCV))
         print "UDP started"

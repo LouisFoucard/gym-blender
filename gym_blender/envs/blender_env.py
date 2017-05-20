@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import signal
+import inspect
 
 import gym
 from gym import error, spaces
@@ -12,7 +13,7 @@ except ImportError as e:
     raise error.DependencyNotInstalled("{}. (HINT: you can install ble "
                                        "dependencies with 'pip install gym[ble].)'".format(e))
 
-    
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -20,13 +21,13 @@ logger = logging.getLogger(__name__)
 class BleEnv(gym.Env, utils.EzPickle):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, game_path='games/ridge/ridge.blend'):
+    def __init__(self, game_path=''):
         super(BleEnv, self).__init__()
         self.viewer = None
         self.server_process = None
         self.game_path = game_path
         self.env = BlenderInterface(game_path)
-        
+
         self.env.start_game()
         self.env.start_udp()
         self.env.get_minimal_action_set()
@@ -36,9 +37,9 @@ class BleEnv(gym.Env, utils.EzPickle):
         self.env.step()
         self.observation_space = spaces.Box(low=-1, high=1,
                                             shape=(self.env.get_screen_dims()))
-        
+
         self.action_space = spaces.Tuple((spaces.Discrete(len(self.env.legal_action_set))))
-        
+
     def __del__(self):
         del self.env
         if self.viewer is not None:
@@ -52,11 +53,11 @@ class BleEnv(gym.Env, utils.EzPickle):
         ob = self.env.get_screen_grayscale()
         episode_over = self.env.get_game_over()
         return ob, reward, episode_over, {}
-    
+
     def _reset(self):
         self.env.reset_game()
-        action = self.env.legal_action_set[np.random.randint(len(self.env.legal_action_set))]
-        self.env.act(action)
+        rand_action = np.random.choice(self.env.legal_action_set)
+        self.env.act(rand_action)
         self.env.step()
         ob = self.env.get_screen_grayscale()
         return ob
@@ -65,3 +66,16 @@ class BleEnv(gym.Env, utils.EzPickle):
         """ ble environement can only run in human mode currently, and 
         game is rendered directly in blender (blender game engine cannot run in )"""
         pass
+
+
+class RidgeEnv(BleEnv):
+
+    def __init__(self, game_path=None):
+        if game_path is None:
+            # find absolute path to the blenderInterface directories
+            game_path = os.path.dirname(inspect.getabsfile(BlenderInterface))
+            # now get game path:
+            game_path = os.path.dirname(os.path.dirname(game_path))
+            game_path = os.path.join(game_path, 'games/ridge/ridge.blend')
+
+        super(RidgeEnv, self).__init__(game_path=game_path)
