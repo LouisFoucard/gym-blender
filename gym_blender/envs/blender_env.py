@@ -26,40 +26,40 @@ class BleEnv(gym.Env, utils.EzPickle):
         self.viewer = None
         self.server_process = None
         self.game_path = game_path
-        self.env = BlenderInterface(game_path)
+        self.blender_interface = BlenderInterface(game_path)
 
-        self.env.start_game()
-        self.env.start_udp()
-        self.env.get_minimal_action_set()
+        self.blender_interface.start_game()
+        self.blender_interface.start_udp()
+        self.blender_interface.get_minimal_action_set()
         # initialize with random action
-        action = self.env.legal_action_set[np.random.randint(len(self.env.legal_action_set))]
-        self.env.act(action)
-        self.env.step()
+        action = self.blender_interface.legal_action_set[np.random.randint(len(self.blender_interface.legal_action_set))]
+        self.blender_interface.act(action)
+        self.blender_interface.step()
         self.observation_space = spaces.Box(low=-1, high=1,
-                                            shape=(self.env.get_screen_dims()))
+                                            shape=(self.blender_interface.get_screen_dims()))
 
-        self.action_space = spaces.Tuple((spaces.Discrete(len(self.env.legal_action_set))))
+        self.action_space = spaces.Discrete(len(self.blender_interface.legal_action_set))
 
     def __del__(self):
-        del self.env
+        del self.blender_interface
         if self.viewer is not None:
             os.kill(self.viewer.pid, signal.SIGKILL)
 
     def _step(self, action):
         for i in range(1):
-            self.env.act(action)
-            self.env.step()
-        reward = self.env.get_reward()
-        ob = self.env.get_screen_grayscale()
-        episode_over = self.env.get_game_over()
+            self.blender_interface.act(action)
+            self.blender_interface.step()
+        reward = self.blender_interface.get_reward()
+        ob = self.blender_interface.get_screen_grayscale()
+        episode_over = self.blender_interface.get_game_over()
         return ob, reward, episode_over, {}
 
     def _reset(self):
-        self.env.reset_game()
-        rand_action = np.random.choice(self.env.legal_action_set)
-        self.env.act(rand_action)
-        self.env.step()
-        ob = self.env.get_screen_grayscale()
+        self.blender_interface.reset_game()
+        rand_action = np.random.choice(self.blender_interface.legal_action_set)
+        self.blender_interface.act(rand_action)
+        self.blender_interface.step()
+        ob = self.blender_interface.get_screen_grayscale()
         return ob
 
     def _render(self, mode='human', close=False):
