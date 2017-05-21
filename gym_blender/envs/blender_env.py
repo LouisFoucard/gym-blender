@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class BleEnv(gym.Env, utils.EzPickle):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, game_path='games/ridge_game.blend'):
+    def __init__(self, game_path='/Users/louis/Documents/gym-blender/games/ridge/ridge.blend'):
         super(BleEnv, self).__init__()
         self.viewer = None
         self.server_process = None
