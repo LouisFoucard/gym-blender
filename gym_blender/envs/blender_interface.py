@@ -36,10 +36,8 @@ class BlenderInterface:
     
     def start_game(self):
         print("starting")
-        args = ['/Applications/blender.app/Contents/MacOS/blender', self.game_name, '-P',
-                '/Users/louis/Documents/gym-blender/games/start_engine.py']
         start_script_path = os.path.join(os.path.dirname(self.game_name), 'start_engine.py')
-        args = ['blender', self.game_name, '-P', start_script_path]
+        args = ['/Applications/blender.app/Contents/MacOS/blender', self.game_name, '-P', start_script_path]
         self.server_process = subprocess.Popen(args, shell=False)
         time.sleep(3.0)
 
