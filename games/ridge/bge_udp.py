@@ -84,17 +84,19 @@ class RidgeGameInterface(BlenderGameInteface):
         super(RidgeGameInterface, self).__init__(scene, contr)
         self.checkpoints = [obj.name for obj in self.scene.objects if 'checkpoint' in obj.name]
         self.new_sensor = contr.sensors['Near']
-        self.legal_action_set = ['forward', 'backward', 'left', 'right']
+        self.legal_action_set = ['left', 'right', 'forward']
 
     def act(self, action):
         assert (action in self.legal_action_set)
         if action == 'forward':
-            self._move(dx=0.2)
+            self._move(dx=0.6)
         elif action == 'backward':
             self._move(dx=0.2)
         elif action == 'left':
+            self._move(dx=0.6)
             self._turn(dtheta=-0.2)
         elif action == 'right':
+            self._move(dx=0.6)
             self._turn(dtheta=0.2)
 
     def get_reward(self):
