@@ -45,8 +45,8 @@ class BleEnv(gym.Env, utils.EzPickle):
         if self.viewer is not None:
             os.kill(self.viewer.pid, signal.SIGKILL)
 
-    def _step(self, action):
-        for i in range(1):
+    def _step(self, action, repeat=3):
+        for i in range(repeat):
             self.blender_interface.act(action)
             self.blender_interface.step()
         reward = self.blender_interface.get_reward()
